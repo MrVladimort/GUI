@@ -1,0 +1,72 @@
+package zadanie2;
+
+public class StringTask implements Runnable {
+	TaskState ts;
+	String result = "", text;
+	int count;
+	Thread task;
+
+	public StringTask(){
+        this.ts = TaskState.ABORTED;
+    }
+	
+	public StringTask(String text, int count) {
+		this.text = text;
+		this.count = count;
+		this.ts = TaskState.CREATED;
+	}
+
+	public TaskState getState() {
+		return this.ts;
+	}
+
+	public void start(){
+		Thread thread = new Thread(this);
+		thread.start();
+	}
+	
+	public boolean isDone() {
+		if(this.result.length() == this.count)
+			return true;
+		else if(this.ts == TaskState.ABORTED)
+			return true;
+		return false;
+	}
+
+	public String getResult() {
+		return this.result;
+	}
+
+	@Override
+	public void run() {
+		this.ts = TaskState.RUNNING;
+        Runnable running = () ->{
+        	
+	        	while(!this.isDone()){
+	        		try { Thread.sleep(500); 
+	        			this.result = this.result + this.text;
+	        		} catch (InterruptedException e) {
+	        			this.ts = TaskState.ABORTED;
+	        			break;
+	        		}
+	        	}
+	        	this.ts = TaskState.READY;
+        };
+       
+        this.task = new Thread(running);
+        this.task.start();
+	}
+
+	public void abort(){
+		try { Thread.sleep(1000); } catch (InterruptedException e) { e.printStackTrace(); }
+		
+        this.task.interrupt();
+        
+        Runnable running = () ->{
+        	this.ts = TaskState.ABORTED; 
+        };
+        
+        this.task = new Thread(running);
+        this.task.start();
+    }
+}
